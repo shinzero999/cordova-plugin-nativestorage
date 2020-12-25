@@ -1,5 +1,6 @@
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -27,6 +28,8 @@ public class NativeStorage extends CordovaPlugin {
     public static final String TAG = "Native Storage";
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
+    private SharedPreferences defaultSharedPref;
+    private SharedPreferences.Editor defaultEditor;
 
     public NativeStorage() {
     }
@@ -38,6 +41,9 @@ public class NativeStorage extends CordovaPlugin {
         String PREFS_NAME = preferences.getString("NativeStorageSharedPreferencesName", "NativeStorage");
         sharedPref = cordova.getActivity().getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
         editor = sharedPref.edit();
+        
+        defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity());
+        defaultEditor = defaultSharedPref.edit();
     }
 
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -219,6 +225,9 @@ public class NativeStorage extends CordovaPlugin {
                         String ref = args.getString(0);
                         //System.out.println("Receveived reference: " + ref);
                         String s = sharedPref.getString(ref, "null");
+                        if (s.equals("null")) {
+                          s = defaultSharedPref.getString(ref, "null");
+                        }
                         callbackContext.success(s);
                     } catch (Exception e) {
                         Log.e(TAG, "GetString failed :", e);
